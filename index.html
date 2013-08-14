@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title></title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script>
+      var str_data = [
+        'ddducabainet', 'abacabal', 'mycabarchive', 'adcabaistrue' , 'scababusracabal'
+      ];
+
+      var i , j , k , pos ,  tmp = { data : [] , tmp : [] , max : [] , old : {}};
+      
+      /*
+       * находим минимальную строку, заполняем массив tmp исходными данными
+       */
+      for (i = 0; i < str_data.length; i++) {
+        if (typeof tmp.min === 'undefined' || str_data[i].length < tmp.min.length) {
+          tmp.min = str_data[i]
+        }
+        
+        tmp.data[i] = [];
+        tmp.tmp[i] = [];
+        tmp.max[i] = { pos : 0 , val : 0 }
+        for( var j = 0; j < str_data[i].length; j++ ) {
+          tmp.data[i][j] = 0;
+        }
+      }
+      
+      /*
+       * заполняем матрицу с буквами, которые есть в минимальной строке
+       */
+      for (i = 0; i < tmp.min.length; i++) {
+        if (tmp.min[i] in tmp.old) {
+          continue;
+        }
+        
+        for (k = 0; k < str_data.length; k++) {
+          for (j = 0; j < str_data[k].length; j++) {
+            if (tmp.min[i] == str_data[k][j]) {
+              tmp.data[k][j] = 1;   
+            }
+          }
+        }
+        tmp.old[tmp.min[i]] = 1;
+      }
+      
+      /*
+       * находим в строках, подстроку с максимальной длиной
+       */
+      for(i = 0; i < tmp.data.length; i++) {
+        pos = -1;
+        for( j = 0; j < tmp.data[i].length ; j++ ) {
+          if(tmp.data[i][j] == 1) {
+            if( pos == -1 ) {
+              pos = j;
+              tmp.tmp[i][pos] = "";
+            }
+            
+            tmp.tmp[i][pos] += str_data[i][j];
+            
+            /*
+             * максимально большая подстрока в строке
+             */
+            if( tmp.max[i].val < tmp.tmp[i][pos].length ) {
+              tmp.max[i] = {val : tmp.tmp[i][pos].length , pos : pos};
+            }
+          } else {
+            pos = -1
+          }
+        }
+      }
+      
+      /*
+       * из строк с максимальной длиной находим минимальную, и берем ее за основу поиска
+       */
+      for( i = 0 ; i < tmp.max.length; i++ ) {
+        if( tmp.max[i].val == 0 ) {
+          tmp.error = 'нет совпадений';
+          break;
+        }
+        
+        if(!( 'max_substr' in tmp )) {
+          tmp.max_substr = 0
+        }
+        
+        if(tmp.max_substr == 0 || tmp.max_substr.length > tmp.max[i].val) {
+          tmp.max_substr = tmp.tmp[i][tmp.max[i].pos]
+        }
+      }
+      
+      /*
+       * поиск вхождений
+       */
+      search : {
+        /*
+         * начинаем поиск с максимальной длины слова
+         */
+        for(var len = tmp.max_substr.length ; len > 1 ; len--) {
+          for(i = 0; i <= ( tmp.max_substr.length - len); i++ ) {
+            var t = [] , sstr = tmp.max_substr.substr(i , len);
+          
+            /*
+             * проверяем вхождение в подстроках
+             */
+            for( j = 0; j < tmp.tmp.length; j++ ) {
+              for(pos in tmp.tmp[j]) {
+                for( k = 0; k <= ( tmp.tmp[j][pos].length - len); k++ ) { 
+                  if( sstr == tmp.tmp[j][pos].substr(k , len) ) {
+                    if( !(j in t) ) {
+                      t[j] = [];
+                    }
+                    t[j][ parseInt(pos) + k + 0 ] = sstr;
+                    continue
+                  }
+                }
+              }
+            }
+            
+            var z = 0;
+            for( k in t ) {
+              z++
+            }
+            
+            if(z == tmp.tmp.length) {
+              tmp.substr = sstr;
+              tmp.substrs = t;
+              break search;
+            }
+          }
+        }
+      }
+      for(var i =0 ; i < str_data.length ; i++) {
+        document.write(i+1 + ':'+ str_data[i]+'<br />');
+      }
+      document.write('Максимальная длинна подстроки:'+ tmp.max_substr);
+
+
+    </script>
+  </head>
+  <body>
+  </body>
+</html>
